@@ -95,6 +95,20 @@ It typically contains:
 - Saved registers
 - Stack-passed arguments
 
+### `RBP`(saved base pointer)
+The saved base pointer is:  
+**The caller’s frame pointer (RBP) that a function saves on the stack when it starts.**
+
+
+It lets the function:
+- Build its own stack frame
+- Still remember where the caller’s frame was
+- Restore everything cleanly before returning
+
+Unlike `RSP` (which moves when you push/pop),
+`RBP` stays **stable** during the function.
+
+
 ### Typical x86-64 stack frame layout
 ```markdown
 High memory
