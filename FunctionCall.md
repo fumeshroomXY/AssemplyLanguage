@@ -69,7 +69,8 @@ call foo
 push RIP   ; address of next instruction
 jmp foo
 ```  
-
+RIP = **Instruction Pointer Register**  
+It holds **the address of the next instruction** the CPU will execute.
 
 ```c
 ret
@@ -81,7 +82,7 @@ ret
 
 ```c
 // Equivalent to:
-pop RIP
+pop RIP // restores RIP, CPU continues exactly where it left off
 ```
 That’s why **stack corruption causes crashes** — `ret` jumps to garbage.
 
