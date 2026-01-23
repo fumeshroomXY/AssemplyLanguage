@@ -108,6 +108,24 @@ It lets the function:
 Unlike `RSP` (which moves when you push/pop),
 `RBP` stays **stable** during the function.
 
+#### Why do we “save” it?
+Before the function runs, `RBP` belongs to the **caller**.
+
+If the callee wants to use `RBP`:
+
+- It must not destroy the caller’s value
+
+- `RBP` is **callee-saved** by the ABI
+
+So the function does this:
+```c
+push rbp        ; save caller’s RBP  ← this is the saved base pointer
+mov rbp, rsp    ; establish new frame
+```
+
+
+
+
 
 ### Typical x86-64 stack frame layout
 ```markdown
@@ -124,6 +142,8 @@ High memory
 └── RSP (stack grows downward)
 Low memory
 ```
+
+
 ### Function prologue (classic)
 ```c
 push rbp        ; save caller’s frame pointer
@@ -133,16 +153,39 @@ sub rsp, 32     ; allocate space for locals
 - Creates a new stack frame
 - Makes locals accessible via fixed offsets
 
+After the prologue, the stack looks like this:
+```markdown
+Higher addresses
+│
+│  arguments (if any on stack)
+│
+│  return address        ← pushed by call
+│  saved RBP             ← pushed by callee, "RBP" points to here
+│  --------------------
+│  local variables
+│  temporaries
+│
+└── RSP (stack grows down)
+Lower addresses
+```
+- RBP points to **saved RBP**
+- `[RBP + 8]` → return address
+- `[RBP - 4]` → first local variable
+
 ### Function epilogue
 ```c
 mov rsp, rbp
-pop rbp
+pop rbp      ; restore caller’s RBP
 ret
 
 // Or the shorthand:
 leave
 ret
 ```
+
+This ensures:
+- Caller’s stack frame is intact
+- Caller’s `RBP` is exactly as before
 
 ## Complete example (C → Assembly)
 **C Code**
