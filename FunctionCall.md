@@ -123,25 +123,11 @@ push rbp        ; save caller’s RBP  ← this is the saved base pointer
 mov rbp, rsp    ; establish new frame
 ```
 
+### `RSP`(Stack Pointer Register)
+- It holds the **memory address of the top of the stack**.
+- `RSP` **moves all the time**
+- On x86-64, that’s a **64-bit** address.
 
-
-
-
-### Typical x86-64 stack frame layout
-```markdown
-High memory
-│
-│  Function arguments (if on stack)
-│  -------------------------------
-│  Return address      ← pushed by call
-│  Saved RBP           ← old frame pointer
-│  -------------------------------
-│  Local variables
-│  Temporary space
-│
-└── RSP (stack grows downward)
-Low memory
-```
 
 
 ### Function prologue (classic)
@@ -153,7 +139,67 @@ sub rsp, 32     ; allocate space for locals
 - Creates a new stack frame
 - Makes locals accessible via fixed offsets
 
-After the prologue, the stack looks like this:
+#### What REALLY happens in function prologue
+##### Initial state (before the callee starts)
+- `RBP` → points to caller’s frame
+- `RSP` → points to top of stack
+- Stack top contains the return address (pushed by call)
+```markdown
+High addresses
+│
+│  return address   ← RSP
+│
+└─ lower addresses
+```
+
+##### `push rbp`
+```markdown
+rsp = rsp - 8        ; make space
+[rsp] = rbp          ; store caller’s RBP
+```
+- `RSP` decreases first
+- Caller’s `RBP` value is stored in stack memory
+
+```markdown
+High addresses
+│
+│  return address
+│  saved RBP        ← RSP
+│
+└─ lower addresses
+```
+
+##### `mov rbp, rsp`
+```markdown
+rbp = rsp
+```
+- `RBP` points to the saved RBP slot
+- This address is defined as the **base of the callee’s stack frame**
+
+```markdown
+High addresses
+│
+│  return address
+│  saved RBP        ← RSP, RBP
+│
+└─ lower addresses
+```
+
+##### `sub rsp, 32`
+Allocate space for local variables:
+```markdown
+High addresses
+│
+│  return address      ← [rbp + 8]
+│  saved RBP           ← [rbp]
+│  ------------------
+│  local variables     ← [rbp - 8], [rbp - 16], ...
+│
+└─ rsp (moves)
+Low addresses
+```
+
+##### After the prologue, the stack looks like this:
 ```markdown
 Higher addresses
 │
@@ -187,6 +233,22 @@ This ensures:
 - Caller’s stack frame is intact
 - Caller’s `RBP` is exactly as before
 
+### Typical x86-64 stack frame layout
+```markdown
+High memory
+│
+│  Function arguments (if on stack)
+│  -------------------------------
+│  Return address      ← pushed by call
+│  Saved RBP           ← old frame pointer = base anchor of the caller’s stack frame
+│  -------------------------------
+│  Local variables
+│  Temporary space
+│
+└── RSP (stack grows downward)
+Low memory
+```
+
 ## Complete example (C → Assembly)
 **C Code**
 ```c
@@ -215,4 +277,60 @@ mov esi, 3
 call add
 ; result in eax
 ```
+
+## FAQs
+### Where is the size of the frame stored?
+Since `RBP` stores a single address that acts as **an anchor point** inside the frame,  
+Where is the size of the frame?
+
+The answer is **the size is not needed**:
+
+A stack frame is defined implicitly by **two moving boundaries**:
+| Boundary                | Register |
+| ----------------------- | -------- |
+| Frame base (anchor)     | `RBP`    |
+| Frame end (current top) | `RSP`    |
+
+
+So conceptually:
+```markdown
+Frame = memory region between RBP and RSP
+frame_size = RBP - RSP
+```
+The CPU never stores this explicitly. It’s inferred at runtime.
+
+### Who decides how much space should be allocated for local variables?
+**The compiler decides**, and the assembly just obeys.
+
+When you write:
+```c
+void f() {
+    int a;         // 4 bytes
+    int b;         // 4 bytes
+    char buf[20];  // 20 bytes
+}
+```
+The compiler:
+- Knows the size of each local variable(4 + 4 + 20 = 28 bytes)
+- Knows alignment rules of the ABI(28 → 32 bytes)
+- Computes a total stack frame size
+- Emits assembly like: `sub rsp, 32`
+
+Assembly itself has **no concept of “local variables”** — it only moves numbers.
+
+#### What about variable-sized locals?
+Example:
+```c
+void f(int n) {
+    int arr[n];   // Now the size is only known at runtime.
+}
+```
+Assembly becomes:
+```c
+mov eax, edi       ; n
+imul eax, 4        ; n * sizeof(int)
+sub rsp, rax       ; dynamic allocation
+```
+Now the stack pointer changes **based on a register**, not a constant.
+
 
