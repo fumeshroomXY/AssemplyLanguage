@@ -7,6 +7,29 @@ mov rbp, rsp
 ```
 means: **Copy the value of `RSP` into `RBP`**
 
+## `[]`
+`[]` means **dereference**
+```markdown
+mov rax, [rbp-8]
+```
+- Go to the memory address `(rbp - 8)`
+- Read 8 bytes(64-bit) from there
+- Put the value into `rax`
+
+## `lea`
+`lea` ≠ load memory  
+`lea` = **calculate address**
+```markdown
+lea rax, [rbp-8]
+
+// equivalent
+rax = rbp - 8
+
+// C
+&x 
+```
+No memory access. No dereference.
+
 ## `push` and `pop`
 `push` and `pop` **move values between registers and memory via the stack**.
 
