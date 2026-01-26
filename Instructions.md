@@ -18,7 +18,7 @@ mov rax, [rbp-8]
 
 ## `lea`
 `lea` ≠ load memory  
-`lea` = **calculate address**
+`lea` = **calculate address**(Load Effective Address)
 ```markdown
 lea rax, [rbp-8]
 
@@ -29,6 +29,42 @@ rax = rbp - 8
 &x 
 ```
 No memory access. No dereference.
+
+### What `lea` really does
+
+Sometimes `lea` is being used here as **fast integer arithmetic**, not for addresses.
+```c
+lea eax, [rdi + 3] // rdi, eax are both registers.
+
+// equivalent to:
+eax = rdi + 3;
+```
+
+#### Why not just use `add`?
+```c
+mov eax, edi
+add eax, 3
+```
+Because `lea` has advantages:
+- Fewer instructions
+
+```c
+lea eax, [rdi + 3]   ; 1 instruction
+
+mov eax, edi         ; 2 instructions
+add eax, 3
+```
+- `lea` does **not affect flags**, `add` modifies condition flags (ZF, CF, OF, etc).
+
+#### `lea` can do complex math in one shot
+`lea` supports:
+```c
+base + index*scale + offset
+
+lea eax, [rdi + rdi*2]     ; eax = rdi * 3
+lea eax, [rdi + rsi*4 + 8]
+```
+Which would otherwise take multiple instructions.
 
 ## `push` and `pop`
 `push` and `pop` **move values between registers and memory via the stack**.
