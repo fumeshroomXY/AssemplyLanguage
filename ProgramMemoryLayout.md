@@ -41,6 +41,7 @@ Lower addresses
 ```markdown
 Memory region: STACK
 
+High address
 ┌────────────────────────┐
 │ frame of main()        │
 ├────────────────────────┤
@@ -48,6 +49,7 @@ Memory region: STACK
 ├────────────────────────┤
 │ frame of bar()         │
 └────────────────────────┘
+Low address
 ```
 
 
