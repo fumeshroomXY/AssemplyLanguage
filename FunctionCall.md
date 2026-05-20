@@ -143,7 +143,7 @@ sub rsp, 32     ; allocate space for locals
 ##### Initial state (before the callee starts)
 - `RBP` → points to caller’s frame
 - `RSP` → points to top of stack
-- Stack top contains the return address (pushed by call)
+- Stack top contains the return address (pushed by caller)
 ```markdown
 High addresses
 │
