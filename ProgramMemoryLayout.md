@@ -170,7 +170,7 @@ Stack frame size is:
 **Same size per call**. Each call gets its own frame.
 
 ### The stack (total stack size)
-This is decided by:OS, Program loader and Runtime environment.
+This is decided by: OS, Program loader and Runtime environment.
 
 ### Heap
 Heap grows at runtime, managed by the OS + allocator (`malloc`)
