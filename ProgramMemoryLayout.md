@@ -169,6 +169,48 @@ Stack frame size is:
 #### What if there’s recursion?
 **Same size per call**. Each call gets its own frame.
 
+#### What if I have an array whose size is not fixed?
+##### In C (before C99): size must be compile‑time constant
+```c
+int n = input();
+int arr[n];   // ❌ illegal in C89
+```
+
+##### In C99 and later: VLAs (Variable Length Arrays)
+C99 introduced **variable-length arrays**, which do allow runtime-sized arrays on the stack:
+```c
+int n = input();
+int arr[n];   // ✔ legal in C99
+```
+The compiler generates dynamic stack adjustment:
+```markdown
+mov eax, n
+imul eax, 4
+sub rsp, rax
+```
+So the stack frame size is **not fixed** anymore — it becomes dynamic.
+
+But this has consequences:
+- You cannot take `sizeof(arr)` at compile time.
+- Debuggers and static analyzers hate it.
+- Many compilers disable VLAs by default.
+
+
+##### In C++: VLAs are NOT allowed
+C++ requires all stack object sizes to be known at compile time.
+
+So this is illegal:
+```c
+int n;
+cin >> n;
+int arr[n];   // ❌ not allowed in C++
+
+// Instead you must use:
+std::vector<int> (heap)
+new int[n] (heap)
+std::unique_ptr<int[]> (heap)
+```
+
 ### The stack (total stack size)
 This is decided by: OS, Program loader and Runtime environment.
 
