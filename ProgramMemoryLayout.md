@@ -166,17 +166,17 @@ Stack frame size is:
 - Fixed at compile time
 - Encoded directly into instructions
 
-#### What if there’s recursion?
+### What if there’s recursion?
 **Same size per call**. Each call gets its own frame.
 
-#### What if I have an array whose size is not fixed?
-##### In C (before C99): size must be compile‑time constant
+### What if I have an array whose size is not fixed?
+#### In C (before C99): size must be compile‑time constant
 ```c
 int n = input();
 int arr[n];   // ❌ illegal in C89
 ```
 
-##### In C99 and later: VLAs (Variable Length Arrays)
+#### In C99 and later: VLAs (Variable Length Arrays)
 C99 introduced **variable-length arrays**, which do allow runtime-sized arrays on the stack:
 ```c
 int n = input();
@@ -196,7 +196,7 @@ But this has consequences:
 - Many compilers disable VLAs by default.
 
 
-##### In C++: VLAs are NOT allowed
+#### In C++: VLAs are NOT allowed
 C++ requires all stack object sizes to be known at compile time.
 
 So this is illegal:
