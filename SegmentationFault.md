@@ -88,6 +88,9 @@ char *s = "hello";
 s[0] = 'H';
 
 mov BYTE PTR [rax], 'H'   ; 💥
+
+char s[] = "hello";
+s[0] = 'H';   // this is OK because s is an array in the stack.
 ```
 - string literals live in **read-only (.rodata)**
 - write access is forbidden
